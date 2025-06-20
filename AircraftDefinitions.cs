@@ -3,9 +3,11 @@ using NuclearOption.SavedMission;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace NuclearOptionTest
 {
@@ -112,7 +114,10 @@ namespace NuclearOptionTest
                 TestDef.spawnOffset = new Vector3(0, 2.3f, -1.4f);
                 TestDef.typeIdentity = def.typeIdentity;
                 TestDef.unitName = "TEST AIRCRAFT UNIT NAME";
+
                 TestDef.unitPrefab = LoadAssetBundle();
+                //TestDef.unitPrefab = def.unitPrefab;
+
                 TestDef.value = 126;
                 TestDef.visibleRange = 3500;
                 TestDef.width = 14.3f;
@@ -122,11 +127,14 @@ namespace NuclearOptionTest
         public static GameObject LoadAssetBundle()
         {
             // TODO actually make the asset bundle lol lmao
-            string assetPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "sd2_sf1");
+            string assetPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "multiroletest");
             Plugin.Logger.LogInfo($"[LoadAssetBundle] Loading prefab from {assetPath}...");
             var testBundle = AssetBundle.LoadFromFile(assetPath);
 
-            var myPrefab = testBundle.LoadAsset<GameObject>("whatever the hell your asset is called");
+            var myPrefab = testBundle.LoadAsset<GameObject>("Multirole1") ?? throw new Exception($"Failed to locate object! Present assets: {string.Join(", ", testBundle.LoadAllAssets().Select(a => a.name))}");
+            
+            ((Unit)myPrefab.GetComponent<Aircraft>()).definition = TestDef;
+
 
             Plugin.Logger.LogInfo("[LoadAssetBundle] All prefabs loaded.");
             testBundle.Unload(false);
