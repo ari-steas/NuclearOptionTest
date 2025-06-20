@@ -22,10 +22,10 @@ namespace NuclearOptionTest
             selectionButton.name = "TEST SELECT NAME";
             selectionButton.definition = AircraftDefinitions.TestDef;
 
-            Buttons =
-            [
+            Buttons = new[]
+            {
                 selectionButton
-            ];
+            };
             
             Plugin.Logger.LogInfo("Generated aircraft selection buttons.");
         }

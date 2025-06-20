@@ -1,8 +1,10 @@
-﻿using NuclearOption.SavedMission;
+﻿using Mirage;
+using NuclearOption.SavedMission;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 using System.Text;
-using Mirage;
 using UnityEngine;
 
 namespace NuclearOptionTest
@@ -110,12 +112,25 @@ namespace NuclearOptionTest
                 TestDef.spawnOffset = new Vector3(0, 2.3f, -1.4f);
                 TestDef.typeIdentity = def.typeIdentity;
                 TestDef.unitName = "TEST AIRCRAFT UNIT NAME";
-                TestDef.unitPrefab = def.unitPrefab;
-                TestDef.unitPrefab = GameObject.Find("TestAircraftPrefab");
+                TestDef.unitPrefab = LoadAssetBundle();
                 TestDef.value = 126;
                 TestDef.visibleRange = 3500;
                 TestDef.width = 14.3f;
             };
+        }
+
+        public static GameObject LoadAssetBundle()
+        {
+            // TODO actually make the asset bundle lol lmao
+            string assetPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "sd2_sf1");
+            Plugin.Logger.LogInfo($"[LoadAssetBundle] Loading prefab from {assetPath}...");
+            var testBundle = AssetBundle.LoadFromFile(assetPath);
+
+            var myPrefab = testBundle.LoadAsset<GameObject>("whatever the hell your asset is called");
+
+            Plugin.Logger.LogInfo("[LoadAssetBundle] All prefabs loaded.");
+            testBundle.Unload(false);
+            return myPrefab;
         }
     }
 }
