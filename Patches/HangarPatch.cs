@@ -21,31 +21,11 @@ namespace NuclearOptionTest.Patches
             var availableAircraft = (AircraftDefinition[]) typeof(Hangar).GetField("availableAircraft", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(__instance) ?? throw new Exception();
             AircraftDefinition[] newAvailableAircraft;
 
-            if (AircraftDefinitions.TestDef == null)
-            {
-                foreach (var existingDef in availableAircraft)
-                {
-                    if (existingDef.unitName == "KR-67 Ifrit")
-                    {
-                        AircraftDefinitions.CopyDef(existingDef);
-                    }
-                }
-            }
-
-            if (AircraftDefinitions.TestDef != null)
-            {
-                Plugin.Logger.LogInfo("TestDef is valid!");
-
-                newAvailableAircraft = new AircraftDefinition[availableAircraft.Length + 1];
-                for (int i = 0; i < availableAircraft.Length; i++)
-                    newAvailableAircraft[i] = availableAircraft[i];
-                newAvailableAircraft[availableAircraft.Length] = AircraftDefinitions.TestDef;
-            }
-            else
-            {
-                Plugin.Logger.LogInfo("TestDef is null :(");
-                newAvailableAircraft = availableAircraft;
-            }
+            newAvailableAircraft = new AircraftDefinition[availableAircraft.Length + AircraftDefinitions.Definitions.Count - 1];
+            for (int i = 0; i < availableAircraft.Length; i++)
+                newAvailableAircraft[i] = availableAircraft[i];
+            for (int i = 0; i < AircraftDefinitions.Definitions.Count; i++)
+                newAvailableAircraft[AircraftDefinitions.Definitions.Count - 1 + i] = AircraftDefinitions.Definitions[i];
 
             __result = newAvailableAircraft;
             Plugin.Logger.LogInfo($"    Hangar @ {__instance.airbase?.SavedAirbase.UniqueName ?? "NULL"} available aircraft:\n" +
@@ -93,7 +73,7 @@ namespace NuclearOptionTest.Patches
                 return false; // skip original
             }
 
-            if (definition == AircraftDefinitions.TestDef)
+            if (AircraftDefinitions.Definitions.Contains(definition))
             {
                 __result = true;
                 return false; // skip original

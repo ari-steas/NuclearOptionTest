@@ -20,7 +20,7 @@ namespace NuclearOptionTest
 
             var selectionButton = cricketButtonClone.transform.GetComponent<AircraftSelectionButton>();
             selectionButton.name = "TEST SELECT NAME";
-            selectionButton.definition = AircraftDefinitions.TestDef;
+            selectionButton.definition = AircraftDefinitions.Definitions[0]; // TODO
 
             Buttons = new[]
             {

@@ -73,6 +73,12 @@ namespace NuclearOptionTest
             var prop = obj.GetType().GetField(name, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
             prop.SetValue(obj, value);
         }
+
+        public static object Invoke(this object obj, string methodName, params object[] args)
+        {
+            MethodInfo dynMethod = obj.GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+            return dynMethod.Invoke(obj, args);
+        }
     }
 
     public class ReferenceEqualityComparer : EqualityComparer<Object>

@@ -15,25 +15,7 @@ namespace NuclearOptionTest.Patches
         [HarmonyPatch(nameof(AircraftSelectionMenu.Initialize))]
         public static bool InitializePrefix(ref AircraftSelectionMenu __instance, Airbase airbase)
         {
-            Plugin.Logger.LogInfo($"[AircraftSelectionMenuPatch] ({__instance.name}) Initialize prefix invoked! Button count: {__instance.listAircraftButtons.Count}");
-
-            if (AircraftDefinitions.TestDef == null)
-            {
-                Plugin.Logger.LogInfo($"[AircraftSelectionMenuPatch] ({__instance.name}) TestDef is null, generating early.");
-
-                foreach (var obj in GameObject.FindObjectsOfType<Hangar>())
-                {
-                    obj.GetAvailableAircraft();
-                    if (AircraftDefinitions.TestDef != null)
-                        break;
-                }
-
-                if (AircraftDefinitions.TestDef == null)
-                {
-                    Plugin.Logger.LogInfo($"[AircraftSelectionMenuPatch] ({__instance.name}) TestDef is still null - returning early!");
-                    return true;
-                }
-            }
+            Plugin.Logger.LogInfo($"[AircraftSelectionMenuPatch] ({__instance.name}) Generating custom buttons.");
 
             if (__instance.listAircraftButtons.Count > 0)
                 AircraftSelectionButtons.GenerateButtons();
