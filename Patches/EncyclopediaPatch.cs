@@ -20,33 +20,44 @@ namespace NuclearOptionTest.Patches
             Plugin.Logger.LogInfo("[EncyclopediaPatch] Inserting definitions...");
             var instance = __instance; // needed to avoid ref issues in lambdas
 
+            var currentAircraftKeys = new HashSet<string>(__instance.aircraft.Select(wm => wm.jsonKey));
             var currentMountKeys = new HashSet<string>(__instance.weaponMounts.Select(wm => wm.jsonKey));
 
-            foreach (var def in AircraftDefinitions.Definitions)
+            foreach (var aircraftDef in AircraftDefinitions.Definitions)
             {
-                if (__instance.aircraft.Contains(def))
+                if (__instance.aircraft.Contains(aircraftDef))
                     continue;
-                __instance.aircraft.Add(def);
-                Plugin.Logger.LogInfo($"[EncyclopediaPatch]     Added aircraft definition {def.unitName}.");
 
-                foreach (var wepMan in def.unitPrefab.GetComponentsInChildren<WeaponManager>())
+                if (aircraftDef.unitPrefab == null)
+                {
+                    Plugin.Logger.LogError($"Missing unit prefab on aircraft definition {aircraftDef.name}!");
+                    continue;
+                }
+
+                // ensure jsonkey is unique, otherwise !!Fun!! occurs
+                while (!currentAircraftKeys.Add(aircraftDef.jsonKey))
+                    aircraftDef.jsonKey += "_NEW";
+                __instance.aircraft.Add(aircraftDef);
+
+                Plugin.Logger.LogInfo($"[EncyclopediaPatch]     Added aircraft definition {aircraftDef.unitName}.");
+
+                foreach (var wepMan in aircraftDef.unitPrefab.GetComponentsInChildren<WeaponManager>())
                 {
                     foreach (var mount in wepMan.hardpointSets.SelectMany(hSet => hSet.weaponOptions))
                     {
                         if (mount == null || instance.weaponMounts.Contains(mount))
                             continue;
 
+                        // ensure jsonkey is unique, otherwise !!Fun!! occurs
                         while (!currentMountKeys.Add(mount.jsonKey))
-                        {
                             mount.jsonKey += "_NEW";
-                        }
 
                         __instance.weaponMounts.Add(mount);
-                        Plugin.Logger.LogInfo($"[EncyclopediaPatch]         Added weapon definitions {mount.jsonKey}.");
+                        Plugin.Logger.LogInfo($"[EncyclopediaPatch]         Added weapon definition {mount.jsonKey}.");
                     }
                 }
 
-                def.unitPrefab.GetComponent<NetworkIdentity>().PrefabHash = def.unitName.GetHashCode(); // TODO make this safer/cleaner
+                aircraftDef.unitPrefab.GetComponent<NetworkIdentity>().PrefabHash = aircraftDef.jsonKey.GetHashCode(); // TODO make this safer/cleaner
             }
 
             foreach (var def in __instance.aircraft)

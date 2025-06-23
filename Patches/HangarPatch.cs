@@ -17,15 +17,14 @@ namespace NuclearOptionTest.Patches
         [HarmonyPatch(nameof(Hangar.GetAvailableAircraft))]
         public static bool GetAvailableAircraftPrefix(ref Hangar __instance, ref AircraftDefinition[] __result)
         {
-            Plugin.Logger.LogInfo("Start invoke GetAvailableHangarPrefix");
             var availableAircraft = (AircraftDefinition[]) typeof(Hangar).GetField("availableAircraft", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(__instance) ?? throw new Exception();
             AircraftDefinition[] newAvailableAircraft;
 
-            newAvailableAircraft = new AircraftDefinition[availableAircraft.Length + AircraftDefinitions.Definitions.Count - 1];
+            newAvailableAircraft = new AircraftDefinition[availableAircraft.Length + AircraftDefinitions.Definitions.Count];
             for (int i = 0; i < availableAircraft.Length; i++)
                 newAvailableAircraft[i] = availableAircraft[i];
             for (int i = 0; i < AircraftDefinitions.Definitions.Count; i++)
-                newAvailableAircraft[AircraftDefinitions.Definitions.Count - 1 + i] = AircraftDefinitions.Definitions[i];
+                newAvailableAircraft[availableAircraft.Length + i] = AircraftDefinitions.Definitions[i];
 
             __result = newAvailableAircraft;
             Plugin.Logger.LogInfo($"    Hangar @ {__instance.airbase?.SavedAirbase.UniqueName ?? "NULL"} available aircraft:\n" +
@@ -34,32 +33,6 @@ namespace NuclearOptionTest.Patches
 
             return false; // Skip the original method
         }
-        
-
-        //[HarmonyPrefix]
-        //[HarmonyPatch(nameof(Hangar.GetAvailableAircraft))]
-        //public static bool GetAvailableAircraftPrefix(ref Hangar __instance, ref AircraftDefinition[] __result)
-        //{
-        //    Plugin.Logger.LogInfo("Start invoke GetAvailableHangarPrefix");
-        //    var availableAircraft = (AircraftDefinition[]) typeof(Hangar).GetField("availableAircraft", BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(__instance) ?? throw new Exception();
-        //
-        //    foreach (var def in availableAircraft)
-        //    {
-        //        if (def.unitName == "KR-67 Ifrit")
-        //        {
-        //            def.unitName = "TEST AIRCRAFT UNIT NAME 2";
-        //            def.aircraftParameters.aircraftName = "TEST AIRCRAFT NAME 2";
-        //            def.aircraftParameters.aircraftDescription = "TEST AIRCRAFT DESCRIPTION";
-        //        }
-        //    }
-        //
-        //    __result = availableAircraft;
-        //    Plugin.Logger.LogInfo($"Hangar @ {__instance.airbase?.SavedAirbase.UniqueName ?? "NULL"} available aircraft: {string.Join(", ", availableAircraft.Select(a => a.unitName))}");
-        //
-        //    return false; // Skip the original method
-        //}
-
-
         
         [HarmonyPrefix]
         [HarmonyPatch(nameof(Hangar.CanSpawnAircraft))]
