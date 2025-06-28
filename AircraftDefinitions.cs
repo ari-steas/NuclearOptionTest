@@ -20,6 +20,8 @@ namespace NuclearOptionTest
             var pluginsPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
             var materials = GetGlobalMaterials();
+            var bundleMaterials = new Dictionary<string, Material>();
+
             var audioClips = GetGlobalAudioClips();
 
             foreach (var bundlePath in Directory.GetFiles(pluginsPath))
@@ -29,9 +31,17 @@ namespace NuclearOptionTest
 
                 Plugin.Logger.LogInfo($"[LoadAssetBundle] Loading asset bundle from {bundlePath}...");
                 AssetBundle testBundle = null;
+
                 try
                 {
                     testBundle = AssetBundle.LoadFromFile(bundlePath);
+
+                    foreach (var mat in testBundle.LoadAllAssets<Material>())
+                    {
+                        if (mat != null && bundleMaterials.TryAdd(mat.name, mat))
+                            Plugin.Logger.LogInfo($"Loaded local bundle material {mat.name}");
+                    }
+
 
                     var allDefs = testBundle.LoadAllAssets<AircraftDefinition>();
                     foreach (var definition in allDefs)
@@ -48,8 +58,9 @@ namespace NuclearOptionTest
                                 foreach (var mat in meshRender.sharedMaterials)
                                 {
                                     Material newMat;
-                                    if (mat != null && materials.TryGetValue(
-                                            mat.name.Replace(" (Instance)", ""), out newMat))
+                                    if (mat != null && (
+                                            materials.TryGetValue(mat.name.Replace(" (Instance)", ""), out newMat) ||
+                                            bundleMaterials.TryGetValue(mat.name.Replace(" (Instance)", ""), out newMat)))
                                     {
                                         mats.Add(newMat);
                                         Plugin.Logger.LogInfo($"            Replaced material {meshRender.name}/{mat.name}");
@@ -59,6 +70,7 @@ namespace NuclearOptionTest
                                         mats.Add(mat);
                                         Plugin.Logger.LogInfo($"            Could not find material {meshRender.name}/{mat?.name ?? "NULL"}");
                                     }
+
                                 }
 
                                 meshRender.SetMaterials(mats);
