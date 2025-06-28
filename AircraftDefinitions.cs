@@ -24,7 +24,7 @@ namespace NuclearOptionTest
 
             foreach (var bundlePath in Directory.GetFiles(pluginsPath))
             {
-                if (!Path.GetFileName(bundlePath).StartsWith("airprefab_"))
+                if (!Path.GetFileName(bundlePath).ToLowerInvariant().StartsWith("airprefab_"))
                     continue;
 
                 Plugin.Logger.LogInfo($"[LoadAssetBundle] Loading asset bundle from {bundlePath}...");
