@@ -36,37 +36,53 @@ namespace NuclearOptionTest
                     var allDefs = testBundle.LoadAllAssets<AircraftDefinition>();
                     foreach (var definition in allDefs)
                     {
-                        Plugin.Logger.LogInfo($"[LoadAssetBundle]    Loaded aircraft definition {definition.unitName}.");
-                        Definitions.Add(definition);
-
-                        foreach (var meshRender in definition.unitPrefab.GetComponentsInChildren<MeshRenderer>())
+                        try
                         {
-                            List<Material> mats = new List<Material>();
-                            for (var i = 0; i < meshRender.sharedMaterials.Length; i++)
+                            Plugin.Logger.LogInfo($"[LoadAssetBundle]    Loading aircraft definition {definition.unitName}...");
+                            if (definition.unitPrefab == null)
+                                throw new Exception("Null unit prefab");
+
+                            foreach (var meshRender in definition.unitPrefab.GetComponentsInChildren<MeshRenderer>())
                             {
-                                Material newMat;
-                                if (materials.TryGetValue(meshRender.sharedMaterials[i].name.Replace(" (Instance)", ""), out newMat))
+                                var mats = new List<Material>();
+                                foreach (var mat in meshRender.sharedMaterials)
                                 {
-                                    mats.Add(newMat);
+                                    Material newMat;
+                                    if (mat != null && materials.TryGetValue(
+                                            mat.name.Replace(" (Instance)", ""), out newMat))
+                                    {
+                                        mats.Add(newMat);
+                                        Plugin.Logger.LogInfo($"            Replaced material {meshRender.name}/{mat.name}");
+                                    }
+                                    else
+                                    {
+                                        mats.Add(mat);
+                                        Plugin.Logger.LogInfo($"            Could not find material {meshRender.name}/{mat?.name ?? "NULL"}");
+                                    }
                                 }
-                                else
-                                {
-                                    mats.Add(meshRender.sharedMaterials[i]);
-                                    Plugin.Logger.LogInfo($"            Could not find material {meshRender.sharedMaterials[i].name}");
-                                }
+
+                                meshRender.SetMaterials(mats);
+                                meshRender.SetSharedMaterials(mats);
                             }
+                            Plugin.Logger.LogInfo($"[LoadAssetBundle]        Completed material postprocessing.");
 
-                            meshRender.SetMaterials(mats);
-                            meshRender.SetSharedMaterials(mats);
+                            foreach (var audioSource in definition.unitPrefab.GetComponentsInChildren<AudioSource>())
+                            {
+                                AudioClip newClip;
+                                if (audioSource.clip != null && audioClips.TryGetValue(audioSource.clip.name, out newClip))
+                                    audioSource.clip = newClip;
+                                else
+                                    Plugin.Logger.LogInfo(
+                                        $"            Could not find audio clip {audioSource.name}/{audioSource.clip?.name ?? "NULL"}");
+                            }
+                            Plugin.Logger.LogInfo($"[LoadAssetBundle]        Completed audio postprocessing.");
+
+                            Definitions.Add(definition);
+                            Plugin.Logger.LogInfo($"[LoadAssetBundle]    Finished loading aircraft definition {definition.unitName}.");
                         }
-
-                        foreach (var audioSource in definition.unitPrefab.GetComponentsInChildren<AudioSource>())
+                        catch (Exception ex)
                         {
-                            AudioClip newClip;
-                            if (audioClips.TryGetValue(audioSource.clip.name, out newClip))
-                                audioSource.clip = newClip;
-                            else
-                                Plugin.Logger.LogInfo($"            Could not find material {audioSource.clip.name}");
+                            Plugin.Logger.LogError(ex);
                         }
                     }
 
