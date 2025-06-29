@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 airprefab_multiroletest
 airprefab_fullcustomair
+*.csproj
