@@ -11,20 +11,21 @@ namespace NuclearOptionTest.Patches
     [HarmonyPatch(typeof(AircraftSelectionMenu))]
     internal class AircraftSelectionMenuPatch
     {
-        [HarmonyPrefix]
-        [HarmonyPatch(nameof(AircraftSelectionMenu.Initialize))]
-        public static bool InitializePrefix(ref AircraftSelectionMenu __instance, Airbase airbase)
+        [HarmonyPostfix]
+        [HarmonyPatch(nameof(AircraftSelectionMenu.Refresh))]
+        public static void RefreshPostfix(
+            AircraftSelectionMenu __instance,
+            Airbase airbase,
+            ref List<AircraftDefinition> ___aircraftSelection
+        )
         {
-            Plugin.Logger.LogInfo($"[AircraftSelectionMenuPatch] ({__instance.name}) Generating custom buttons.");
+            Plugin.Logger.LogInfo($"[AircraftSelectionMenuPatch] ({__instance.name}) Adding Aircraft to Selection");
 
-            if (__instance.listAircraftButtons.Count > 0)
-                AircraftSelectionButtons.GenerateButtons();
-
-            foreach (var button in AircraftSelectionButtons.Buttons)
-                if (!__instance.listAircraftButtons.Contains(button))
-                    __instance.listAircraftButtons.Add(button);
-
-            return true; // exec original method
+            foreach (var aircraft in AircraftDefinitions.Definitions)
+            {
+                if (!___aircraftSelection.Contains(aircraft))
+                    ___aircraftSelection.Add(aircraft);
+            }
         } 
     }
 }
